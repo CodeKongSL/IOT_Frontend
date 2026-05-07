@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   Line,
@@ -10,6 +11,45 @@ import {
 import GlassCard from '../common/GlassCard'
 import { formatTime } from '../utils/format'
 
+// Inject CSS for line animations
+const injectAnimationStyles = () => {
+  if (typeof document !== 'undefined' && !document.getElementById('chart-animations')) {
+    const style = document.createElement('style')
+    style.id = 'chart-animations'
+    style.textContent = `
+      @keyframes lineFlow {
+        0% {
+          filter: brightness(0.8);
+          stroke-width: 2.5px;
+        }
+        50% {
+          filter: brightness(1.1);
+          stroke-width: 3px;
+        }
+        100% {
+          filter: brightness(0.9);
+          stroke-width: 2.5px;
+        }
+      }
+      
+      @keyframes dashFlow {
+        0% {
+          stroke-dashoffset: 1000;
+        }
+        100% {
+          stroke-dashoffset: 0;
+        }
+      }
+      
+      .animated-line {
+        animation: lineFlow 1.5s ease-in-out infinite, dashFlow 2s linear infinite !important;
+        filter: drop-shadow(0 0 4px currentColor);
+      }
+    `
+    document.head.appendChild(style)
+  }
+}
+
 const lineDefs = [
   { key: 'temperature', color: '#ffb347', label: 'Temp' },
   { key: 'humidity', color: '#6fe3ff', label: 'Humidity' },
@@ -19,6 +59,30 @@ const lineDefs = [
 
 export default function RealtimeChart({ data }) {
   const trimmed = data.slice(-60)
+  const yDomain = getVisibleDomain(trimmed)
+  const chartRef = useRef(null)
+
+  // Initialize animation styles on mount
+  useEffect(() => {
+    injectAnimationStyles()
+  }, [])
+
+  // Add smooth flowing animation to the chart lines
+  useEffect(() => {
+    const svg = chartRef.current?.querySelector('svg')
+    if (!svg) return
+
+    // Find all line paths and apply animation
+    const paths = svg.querySelectorAll('path[class*="recharts-line"]')
+    paths.forEach((path) => {
+      const pathLength = path.getTotalLength?.() || 0
+      if (pathLength > 0) {
+        // Set up stroke dash animation
+        path.style.strokeDasharray = pathLength
+        path.classList.add('animated-line')
+      }
+    })
+  }, [trimmed])
 
   return (
     <GlassCard className="px-4 py-4 sm:px-6">
@@ -44,6 +108,7 @@ export default function RealtimeChart({ data }) {
         </div>
       </div>
       <motion.div
+        ref={chartRef}
         className="mt-6 h-64 w-full"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -60,6 +125,8 @@ export default function RealtimeChart({ data }) {
             <YAxis
               stroke="rgba(148, 163, 184, 0.4)"
               tick={{ fontSize: 11 }}
+              domain={yDomain}
+              tickFormatter={formatYAxisValue}
             />
             <Tooltip
               contentStyle={{
@@ -69,6 +136,7 @@ export default function RealtimeChart({ data }) {
                 fontSize: '12px',
               }}
               labelFormatter={formatTime}
+              formatter={(value) => value.toFixed(1)}
             />
             {lineDefs.map((line) => (
               <Line
@@ -76,9 +144,9 @@ export default function RealtimeChart({ data }) {
                 type="monotone"
                 dataKey={line.key}
                 stroke={line.color}
-                strokeWidth={2}
+                strokeWidth={2.5}
                 dot={false}
-                isAnimationActive
+                isAnimationActive={false}
               />
             ))}
           </LineChart>
@@ -86,4 +154,43 @@ export default function RealtimeChart({ data }) {
       </motion.div>
     </GlassCard>
   )
+}
+
+function formatYAxisValue(value) {
+  // Format large numbers to be more readable
+  if (value >= 1000) {
+    return (value / 1000).toFixed(0) + 'k'
+  }
+  return value.toFixed(0)
+}
+
+function getVisibleDomain(data) {
+  if (!data || data.length === 0) {
+    return ['auto', 'auto']
+  }
+
+  let min = Number.POSITIVE_INFINITY
+  let max = Number.NEGATIVE_INFINITY
+
+  for (const entry of data) {
+    for (const { key } of lineDefs) {
+      const value = entry?.[key]
+      if (typeof value !== 'number' || Number.isNaN(value)) {
+        continue
+      }
+
+      if (value < min) min = value
+      if (value > max) max = value
+    }
+  }
+
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return ['auto', 'auto']
+  }
+
+  const range = max - min
+  const baseline = Math.max(Math.abs(max), Math.abs(min), 1)
+  const padding = Math.max(range * 0.12, baseline * 0.006)
+
+  return [min - padding, max + padding]
 }

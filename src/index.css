@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-900 font-body antialiased;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(78, 192, 255, 0.16), transparent 45%),
+      radial-gradient(circle at 90% 10%, rgba(114, 241, 184, 0.14), transparent 40%),
+      linear-gradient(160deg, #f5f6f9, #e9eef7 55%, #f6f8fc 100%);
+    min-height: 100svh;
+  }
+
+  .dark body {
+    @apply bg-ink-900 text-ink-50;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(42, 148, 255, 0.18), transparent 45%),
+      radial-gradient(circle at 80% 0%, rgba(114, 241, 184, 0.14), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(255, 122, 162, 0.1), transparent 38%),
+      linear-gradient(140deg, #0a0f1b, #141a2b 55%, #0c1220 100%);
+  }
+
+  #root {
+    min-height: 100svh;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply rounded-2xl border border-ink-200/70 bg-glass-light shadow-glass backdrop-blur-glass;
+  }
+
+  .dark .glass-panel {
+    @apply border-white/10 bg-glass-dark;
+  }
+
+  .metric-card {
+    @apply glass-panel px-5 py-4 md:px-6 md:py-5;
+  }
+
+  .input-shell {
+    @apply flex items-center gap-2 rounded-full border border-ink-200 bg-white/70 px-3 py-2 text-sm text-ink-700 backdrop-blur-glass;
+  }
+
+  .dark .input-shell {
+    @apply border-white/10 bg-white/5 text-ink-100;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border border-ink-200 bg-white/70 px-2.5 py-1 text-xs uppercase tracking-[0.2em] text-ink-600;
+  }
+
+  .dark .chip {
+    @apply border-white/10 bg-white/10 text-ink-100;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 22px rgba(78, 192, 255, 0.4);
+  }
+
+  .grid-sheen {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 0);
+    background-size: 28px 28px;
+  }
+}

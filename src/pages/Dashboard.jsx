@@ -48,13 +48,13 @@ export default function Dashboard() {
   const statsQuery = useQuery({
     queryKey: ['stats'],
     queryFn: getStats,
-    refetchInterval: 8000,
+    refetchInterval: 500,
   })
 
   const liveQuery = useQuery({
     queryKey: ['live-feed'],
     queryFn: () => getLiveReadings(1000),
-    refetchInterval: 4000,
+    refetchInterval: 500,
   })
 
   const liveFeed = useMemo(() => {

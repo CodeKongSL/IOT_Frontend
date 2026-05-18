@@ -76,7 +76,7 @@ export default function CategoryWorkspace({
     ? searchQuery.data?.total ?? records.length
     : historyQuery.data?.total ?? records.length
 
-  const liveItems = liveReadings.slice(0, 6)
+  const liveItems = liveReadings.slice(0, 50)
 
   const handleApply = () => {
     const nextFilters = {
@@ -100,49 +100,32 @@ export default function CategoryWorkspace({
   }
 
   return (
-    <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
-      <div className="flex flex-col gap-6">
-        {(wsStatus === 'error' || wsStatus === 'closed') && (
-          <div className="glass-panel flex flex-wrap items-center justify-between gap-4 border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-ink-100">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-rose-200">
-                WebSocket Disconnected
-              </p>
-              <p className="mt-1 text-ink-100">
-                Live readings are paused. Reconnect to resume streaming.
-              </p>
-            </div>
-            <button type="button" className="btn-primary" onClick={onReconnect}>
-              Reconnect
-            </button>
+    <section className="flex flex-col gap-6">
+      {(wsStatus === 'error' || wsStatus === 'closed') && (
+        <div className="glass-panel flex flex-wrap items-center justify-between gap-4 border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-ink-100">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-rose-200">
+              WebSocket Disconnected
+            </p>
+            <p className="mt-1 text-ink-100">
+              Live readings are paused. Reconnect to resume streaming.
+            </p>
           </div>
-        )}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {liveItems.length === 0 ? (
-            <div className="glass-panel flex min-h-[160px] items-center justify-center text-sm text-ink-200">
-              Awaiting live WebSocket readings.
-            </div>
-          ) : (
-            liveItems.map((reading, index) => (
-              <LiveReadingCard key={reading.id} reading={reading} index={index} />
-            ))
-          )}
+          <button type="button" className="btn-primary" onClick={onReconnect}>
+            Reconnect
+          </button>
         </div>
-
-        <HistoryTable
-          data={records}
-          isLoading={historyQuery.isLoading || searchQuery.isLoading}
-          isError={historyQuery.isError || searchQuery.isError}
-          page={page}
-          pageSize={pageSize}
-          total={totalRecords}
-          onPageChange={setPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size)
-            setPage(1)
-          }}
-          onJumpToPage={(value) => setPage(Math.min(Math.max(value, 1), 1000))}
-        />
+      )}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-5">
+        {liveItems.length === 0 ? (
+          <div className="glass-panel flex min-h-[160px] items-center justify-center text-sm text-ink-200 md:col-span-3 xl:col-span-5">
+            Awaiting live WebSocket readings.
+          </div>
+        ) : (
+          liveItems.map((reading, index) => (
+            <LiveReadingCard key={reading.id} reading={reading} index={index} />
+          ))
+        )}
       </div>
 
       <FilterPanel
@@ -157,6 +140,21 @@ export default function CategoryWorkspace({
             tone: 'info',
           })
         }
+      />
+
+      <HistoryTable
+        data={records}
+        isLoading={historyQuery.isLoading || searchQuery.isLoading}
+        isError={historyQuery.isError || searchQuery.isError}
+        page={page}
+        pageSize={pageSize}
+        total={totalRecords}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size)
+          setPage(1)
+        }}
+        onJumpToPage={(value) => setPage(Math.min(Math.max(value, 1), 1000))}
       />
     </section>
   )

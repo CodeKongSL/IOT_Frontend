@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import TopNav from '../components/TopNav'
 import CategoryTabs from '../components/CategoryTabs'
-import OverviewPanel from '../dashboard/OverviewPanel'
 import CategoryWorkspace from '../dashboard/CategoryWorkspace'
 import LiveDataPanel from '../dashboard/LiveDataPanel'
 import Modal from '../components/Modal'
@@ -80,8 +79,6 @@ export default function Dashboard() {
       />
 
       <main className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 px-5 pb-12 pt-8 sm:px-6 lg:px-8">
-        <OverviewPanel stats={statsQuery.data} isLoading={statsQuery.isLoading} />
-
         <section className="glass-panel px-5 py-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
